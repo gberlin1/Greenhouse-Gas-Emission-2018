@@ -5,7 +5,23 @@ date: "11/29/2019"
 output: html_notebook
 ---
 
-# load libraries and data
+# load libraries
 ```{r}
+# clear environment
+rm(list = ls()) 
 
+# load pakcages
+library(DataComputing)
+library(tidyverse)
+library(lubridate)
+library(ggplot2)
+library(mosaic)
+library(mosaicData)
+library(readr)
 ```
+
+# read in data
+```{r}
+emissionsTable <- read_csv("/home/gabriel/college/Greenhouse Gas Emissions 2018/direct_emitters.csv", skip = 3)
+```
+
