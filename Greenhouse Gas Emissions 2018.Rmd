@@ -1,0 +1,11 @@
+---
+title: "Greenhouse Gas Emissions 2018"
+author: "Gabriel Berlin"
+date: "11/29/2019"
+output: html_notebook
+---
+
+# load libraries and data
+```{r}
+
+```
