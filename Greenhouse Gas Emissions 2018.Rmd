@@ -20,8 +20,42 @@ library(mosaicData)
 library(readr)
 ```
 
-# read in data
+# load data
 ```{r}
 emissionsTable <- read_csv("/home/gabriel/college/Greenhouse Gas Emissions 2018/direct_emitters.csv", skip = 3)
 ```
 
+# view data
+```{r}
+str(emissionsTable)
+head(emissionsTable, 10)
+```
+
+
+# industries
+```{r}
+industriesList <- 
+  emissionsTable %>%
+  select("Industry Type (sectors)")
+industriesList
+```
+
+```{r}
+industriesType <-
+  industriesList %>%
+  group_by() %>%
+  summarise(total = n())
+industriesType
+```
+
+```{r}
+emissionsTable <-
+  emissionsTable %>%
+  rename(industry = `Industry Type (sectors)`)
+```
+
+```{r}
+emissionsTable %>%
+  group_by(industry) %>% 
+  summarise(total = n())
+```
