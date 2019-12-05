@@ -122,8 +122,21 @@ emissionsTable %>%
 
 ```
 
+# Total emissions by state
 ```{r}
 emissionsTable %>%
   group_by(State) %>%
   summarise(emissions = sum(`Total reported direct emissions`))
+```
+
+Would be better to get emissions on a per capita basis by state. Each of these states have huge differences in population size
+
+
+Will be interesting to see a map with emissions superimposed
+```{r}
+library(maps)
+```
+
+```{r}
+data("usaMapEnv")
 ```
