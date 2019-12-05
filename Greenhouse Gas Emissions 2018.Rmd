@@ -5,7 +5,7 @@ date: "11/29/2019"
 output: html_notebook
 ---
 
-# load libraries
+## load libraries
 ```{r}
 # clear environment
 rm(list = ls()) 
@@ -20,42 +20,65 @@ library(mosaicData)
 library(readr)
 ```
 
-# load data
+## load data
 ```{r}
-emissionsTable <- read_csv("/home/gabriel/college/Greenhouse Gas Emissions 2018/direct_emitters.csv", skip = 3)
+fullEmissionsTable <- read_csv("/home/gabriel/college/Greenhouse Gas Emissions 2018/direct_emitters.csv", skip = 3)
 ```
 
-# view data
+## view data
 ```{r}
-str(emissionsTable)
-head(emissionsTable, 10)
+names(fullEmissionsTable)
+str(fullEmissionsTable)
+head(fullEmissionsTable, 10)
+```
+
+The table's columns contain information about three different things: information about the facility, actual emissions data, and how gasses were emitted.
+How gasses were emitted is not relevant to the research question, so I will focus on only the first two categories and I will get rid of the variables I do not need..
+
+# data wrangling
+```{r}
+emissionsTable <- 
+  fullEmissionsTable %>%
+  rename(sector = `Industry Type (sectors)`) %>%
+  select(`Facility Id`, `FRS Id`, `Facility Name`, `State`, Latitude, Longitude, 
+         `sector`, `Total reported direct emissions`, 
+         `CO2 emissions (non-biogenic)`, `Methane (CH4) emissions`, 
+         `Nitrous Oxide (N2O) emissions`, `HFC emissions`, `PFC emissions`, `SF6 emissions`,
+         `NF3 emissions`, `Other Fully Fluorinated GHG emissions`, `HFE emissions`,
+         `Other GHGs (metric tons CO2e)`, `Biogenic CO2 emissions (metric tons)`)
 ```
 
 
-# industries
+# create list of sectors/industries
 ```{r}
-industriesList <- 
+sector <-
   emissionsTable %>%
-  select("Industry Type (sectors)")
-industriesList
+  group_by(sector) %>%
+  summarise(total = n()) %>%
+  select(sector, total)
+sector
 ```
 
+There are multiple sectors in some of the values. For example, "Chemicals,Coal-based Liquid Fuel Supply,Suppliers of CO2". Because there are multiple values in a single cell, this data is not in tidy form. To make it in tidy form I will make sure there is only one value in a cell.
+I will need to use regular expressions and a loop to replace the values.
+
+### pseudo-code: first create a regular expression, then use the loop
 ```{r}
-industriesType <-
-  industriesList %>%
-  group_by() %>%
-  summarise(total = n())
-industriesType
+chem <- "Chemicals"
+metals <- "Metals"
+minerals <- "Minerals"
+natural <- "Natural Gas"
+other <- "Other"
+petroSys <- "Petroleum and "
+petroSup <- "Petroleum Product"
+paper <- "Pulp"
+injection <- "Injection of "
+
+for (s in sector) {
+  if (s == "$Chemical") {
+    mutate(s == chem)
+  } else if (s == )
+}
 ```
 
-```{r}
-emissionsTable <-
-  emissionsTable %>%
-  rename(industry = `Industry Type (sectors)`)
-```
 
-```{r}
-emissionsTable %>%
-  group_by(industry) %>% 
-  summarise(total = n())
-```
