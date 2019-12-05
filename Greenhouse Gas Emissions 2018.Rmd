@@ -48,18 +48,15 @@ emissionsTable <-
          `Other GHGs (metric tons CO2e)`, `Biogenic CO2 emissions (metric tons)`)
 ```
 
-
+View a table of all the different sectors and how many times they appear in the emissions table.
 # create list of sectors/industries
 ```{r}
-sector <-
-  emissionsTable %>%
+emissionsTable %>%
   group_by(sector) %>%
-  summarise(total = n()) %>%
-  select(sector, total)
-sector
+  summarise(total = n())
 ```
 
-There are multiple sectors in some of the values. For example, "Chemicals,Coal-based Liquid Fuel Supply,Suppliers of CO2". Because there are multiple values in a single cell, this data is not in tidy form. To make it in tidy form I will make sure there is only one value in a cell.
+There are multiple sectors in some of the values. For example, "Chemicals,Coal-based Liquid Fuel Supply,Suppliers of CO2". Because there are multiple values in a single cell, this data is not in tidy form. To make it in tidy form I will make sure there is only one value in a cell. Additionally, many details are not necessary.
 I will need to use regular expressions and a loop to replace the values.
 
 ### pseudo-code: first create a regular expression, then use the loop
@@ -69,16 +66,47 @@ metals <- "Metals"
 minerals <- "Minerals"
 natural <- "Natural Gas"
 other <- "Other"
-petroSys <- "Petroleum and "
-petroSup <- "Petroleum Product"
+petro <- "Petroleum"
 paper <- "Pulp"
-injection <- "Injection of "
-
-for (s in sector) {
-  if (s == "$Chemical") {
-    mutate(s == chem)
-  } else if (s == )
-}
+injection <- "Injection"
 ```
 
 
+```{r}
+emissionsTable %>%
+  mutate(sector = gsub(pattern = "^Chemic+", replacement = chem, sector))
+
+```
+
+```{r}
+#Original Code: (will change)
+for (i in 1:length(emissionsTable$sector)) {
+  if (grep(emissionsTable$sector[i] == "Chemical")) {
+    mutate(sector = chem)
+  } }
+```
+  else if (sectorList[i] == "$Metals") {
+    mutate(sector = metals)
+  } else if (sectorList[i] == "$Minerals") {
+    mutate(sectorList, sector = minerals)
+  } else if (sectorList[i] == "$Natural") {
+    mutate(sectorList, sector = natural)
+  } else if (sectorList[i] == "$Petroleum") {
+    mutate(sectorList, sector = petro)
+  } else if (sectorList[i] == "$Pulp") {
+    mutate(sectorList, sector = paper)
+  } else if (sectorList[i] == "$Injection") {
+    mutate(sectorList, sector = injection)
+  } else {
+    mutate(sectorList, sector = other)
+  }
+}
+
+
+# View all emissions by sector
+```{r}
+emissionsTable %>%
+  group_by(sector) %>%
+  summarise(emissions = sum(`Total reported direct emissions`)) %>%
+  arrange(desc(emissions))
+```
