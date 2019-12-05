@@ -74,7 +74,8 @@ injection <- "Injection"
 
 ```{r}
 emissionsTable %>%
-  mutate(sector = gsub(pattern = "^Chemic+", replacement = chem, sector))
+  mutate(sector = gsub(pattern = "^Chemic+", replacement = chem, sector),
+         )
 
 ```
 
@@ -109,4 +110,20 @@ emissionsTable %>%
   group_by(sector) %>%
   summarise(emissions = sum(`Total reported direct emissions`)) %>%
   arrange(desc(emissions))
+```
+
+# View CO2 and methane emissions 
+```{r}
+emissionsTable %>%
+  group_by(sector) %>%
+  summarise("CO2 Emissions" = sum(`CO2 emissions (non-biogenic)`, na.rm = TRUE),
+            "Methand Emissions" = sum(`Methane (CH4) emissions`, na.rm = TRUE))
+
+
+```
+
+```{r}
+emissionsTable %>%
+  group_by(State) %>%
+  summarise(emissions = sum(`Total reported direct emissions`))
 ```
