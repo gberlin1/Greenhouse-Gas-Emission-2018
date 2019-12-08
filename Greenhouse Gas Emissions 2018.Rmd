@@ -5,12 +5,11 @@ date: "11/29/2019"
 output: html_notebook
 ---
 
-# Greenhouse Gas Emissions in 2018 across the United States
-## Greenhouse gas reporting program fun by the epa requires all facilities that emit over 25,000 metric tons of CO2 to record and report their emissions. The EPA makes these data publicly available.
+# Greenhouse gas reporting program fun by the epa requires all facilities that emit over 25,000 metric tons of CO2 to record and report their emissions. The EPA makes these data publicly available.
 ## In this project I will look at greenhouse gas emissions across industries and states. Knowing the source of emissions and the purpose of those emissions will help people better reduce those emissions. 
 
-## First I need to load packages and data
-### load libraries
+### First I need to load packages and data
+#### load libraries
 ```{r}
 # clear environment
 rm(list = ls()) 
@@ -27,7 +26,7 @@ library(maps)
 library(rvest)
 ```
 
-# load data
+#### load data
 ```{r}
 fullEmissionsTable <- read_csv("/home/gabriel/college/Greenhouse Gas Emissions 2018/direct_emitters.csv", skip = 3)
 populationWebPage <- "https://en.m.wikipedia.org/wiki/List_of_states_and_territories_of_the_United_States_by_population"
@@ -38,28 +37,50 @@ populationByStateTables <-
   html_table(fill = TRUE)
 ```
 
-### I need to get the first table
+#### I need to get the first table
 ```{r}
 populationByState <- populationByStateTables[[1]]
 ```
 
-# view data
-## Names of the columns
+### view emissions data
+#### Names of the columns
 ```{r}
 names(fullEmissionsTable)
 ```
 
-## Information about the table
+#### Information about the table
 ```{r}
 str(fullEmissionsTable)
 ```
 
-## First few rows of the table
+#### First few rows of the table
 ```{r}
 head(fullEmissionsTable, 10)
 ```
 
-# The table's columns contain information about three different things: information about the facility, actual emissions data, and how gasses were emitted. How gasses were emitted is beyond the scopeof  the research question, so I will focus on only the first two categories and I will get rid of the variables I do not need. 
+### view population data
+```{r}
+names(populationByState)
+head(populationByState, 10)
+```
+
+### I only need the name of the state and it population
+```{r}
+populationByState <-
+  populationByState %>%
+  select(Name, `Population estimate, July 1, 2018[5]`)
+```
+
+### The variable "Population estimate, July1, 2018[5]" is too wordy
+```{r}
+populationByState <-
+  populationByState %>%
+  rename("2018 Population" = `Population estimate, July 1, 2018[5]`)
+```
+
+
+
+## The table's columns contain information about three different things: information about the facility, actual emissions data, and how gasses were emitted. How gasses were emitted is beyond the scopeof  the research question, so I will focus on only the first two categories and I will get rid of the variables I do not need. 
 
 ## data wrangling
 ```{r}
@@ -88,7 +109,7 @@ emissionsTable %>%
   summarise(total = n())
 ```
 
-## There are multiple sectors in some of the values. For example, "Chemicals,Coal-based Liquid Fuel Supply,Suppliers of CO2". Because there are multiple values in a single cell, this data is not in tidy form. To make it in tidy form I will make sure there is only one value in a cell. Additionally, these details are not relevant. I will need to use regular expressions and a loop to replace the values.
+There are multiple sectors in some of the values. For example, "Chemicals,Coal-based Liquid Fuel Supply,Suppliers of CO2". Because there are multiple values in a single cell, this data is not in tidy form. To make it in tidy form I will make sure there is only one value in a cell. Additionally, these details are not relevant. I will need to use regular expressions and a loop to replace the values.
 
 ## these are the new simplified sectors
 ```{r}
@@ -107,7 +128,7 @@ injection <- "Injection"
 ## loop through the emissions table and replace the sector values with their simplified version
 ```{r}
 s <- "" # variable needed to loop through table
-i <- 0
+i <- 0 # for loop counter variable
 
 for (i in 1:nrow(emissionsTable)) {
   s <- emissionsTable[i, "sector"]  # access sector value in each row
@@ -140,6 +161,8 @@ emissionsTable %>%
   summarise(emissions = sum(`Total reported direct emissions`)) %>%
   arrange(desc(emissions))
 ```
+
+### Barchart of emissions by sector
 
 # View CO2 and methane emissions 
 ```{r}
