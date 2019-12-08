@@ -9,8 +9,7 @@ output: html_notebook
 ## Greenhouse gas reporting program fun by the epa requires all facilities that emit over 25,000 metric tons of CO2 to record and report their emissions. The EPA makes these data publicly available.
 ## In this project I will look at greenhouse gas emissions across industries and states. Knowing the source of emissions and the purpose of those emissions will help people better reduce those emissions. 
 
-
-## 
+## First I need to load packages and data
 ### load libraries
 ```{r}
 # clear environment
@@ -25,11 +24,23 @@ library(mosaic)
 library(mosaicData)
 library(readr)
 library(maps)
+library(rvest)
 ```
 
-### load data
+# load data
 ```{r}
 fullEmissionsTable <- read_csv("/home/gabriel/college/Greenhouse Gas Emissions 2018/direct_emitters.csv", skip = 3)
+populationWebPage <- "https://en.m.wikipedia.org/wiki/List_of_states_and_territories_of_the_United_States_by_population"
+populationByStateTables <-
+  populationWebPage %>%
+  read_html() %>%
+  html_nodes(css = "table") %>%
+  html_table(fill = TRUE)
+```
+
+### I need to get the first table
+```{r}
+populationByState <- populationByStateTables[[1]]
 ```
 
 # view data
@@ -62,6 +73,7 @@ emissionsTable <-
          `NF3 emissions`, `Other Fully Fluorinated GHG emissions`, `HFE emissions`,
          `Other GHGs (metric tons CO2e)`, `Biogenic CO2 emissions (metric tons)`)
 ```
+
 
 # View a table of all the different sectors and how many times they appear in the emissions table.
 ## View list of sectors/industries
@@ -147,12 +159,17 @@ emissionsTable %>%
 ```
 
 Would be better to get emissions on a per capita basis by state. Each of these states have huge differences in population size
-
+# get table with states and population
+# add total emissions to that table
+# divide emissions per state by populaiton of that state
 
 Will be interesting to see a map with emissions superimposed
 ```{r}
 data("usaMapEnv")
 ```
+
+
+
 
 
 
