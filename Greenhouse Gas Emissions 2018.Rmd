@@ -5,7 +5,13 @@ date: "11/29/2019"
 output: html_notebook
 ---
 
-## load libraries
+# Greenhouse Gas Emissions in 2018 across the United States
+## Greenhouse gas reporting program fun by the epa requires all facilities that emit over 25,000 metric tons of CO2 to record and report their emissions. The EPA makes these data publicly available.
+## In this project I will look at greenhouse gas emissions across industries and states. Knowing the source of emissions and the purpose of those emissions will help people better reduce those emissions. 
+
+
+## 
+### load libraries
 ```{r}
 # clear environment
 rm(list = ls()) 
@@ -21,7 +27,7 @@ library(readr)
 library(maps)
 ```
 
-## load data
+### load data
 ```{r}
 fullEmissionsTable <- read_csv("/home/gabriel/college/Greenhouse Gas Emissions 2018/direct_emitters.csv", skip = 3)
 ```
