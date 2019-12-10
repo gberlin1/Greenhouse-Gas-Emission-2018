@@ -5,11 +5,10 @@ date: "11/29/2019"
 output: html_notebook
 ---
 
-# Greenhouse gas reporting program fun by the epa requires all facilities that emit over 25,000 metric tons of CO2 to record and report their emissions. The EPA makes these data publicly available.
-## In this project I will look at greenhouse gas emissions across industries and states. Knowing the source of emissions and the purpose of those emissions will help people better reduce those emissions. 
+# Greenhouse gas reporting program fun by the epa requires all facilities that emit over 25,000 metric tons of CO2 to record and report their emissions. The EPA makes these data publicly available.In this project I will look at greenhouse gas emissions across industries and states. Knowing the source of emissions and the purpose of those emissions will help people better reduce those emissions. 
 
-### First I need to load packages and data
-#### load libraries
+# First I need to load packages and data
+## load libraries
 ```{r}
 # clear environment
 rm(list = ls()) 
@@ -26,7 +25,7 @@ library(maps)
 library(rvest)
 ```
 
-#### load data
+## load data
 ```{r}
 fullEmissionsTable <- read_csv("/home/gabriel/college/Greenhouse Gas Emissions 2018/direct_emitters.csv", skip = 3)
 populationWebPage <- "https://en.m.wikipedia.org/wiki/List_of_states_and_territories_of_the_United_States_by_population"
@@ -37,13 +36,13 @@ populationByStateTables <-
   html_table(fill = TRUE)
 ```
 
-#### I need to get the first table
+## I need to get the first table
 ```{r}
 populationByState <- populationByStateTables[[1]]
 ```
 
-### view emissions data
-#### Names of the columns
+## view emissions table data
+### Names of the columns
 ```{r}
 names(fullEmissionsTable)
 ```
@@ -58,20 +57,20 @@ str(fullEmissionsTable)
 head(fullEmissionsTable, 10)
 ```
 
-### view population data
+## view population data
 ```{r}
 names(populationByState)
 head(populationByState, 10)
 ```
 
-### I only need the name of the state and it population
+## I only need the name of the state and it population
 ```{r}
 populationByState <-
   populationByState %>%
   select(Name, `Population estimate, July 1, 2018[5]`)
 ```
 
-### The variable "Population estimate, July1, 2018[5]" is too wordy
+## The variable "Population estimate, July1, 2018[5]" is too wordy
 ```{r}
 populationByState <-
   populationByState %>%
@@ -80,7 +79,8 @@ populationByState <-
 
 
 
-## The table's columns contain information about three different things: information about the facility, actual emissions data, and how gasses were emitted. How gasses were emitted is beyond the scopeof  the research question, so I will focus on only the first two categories and I will get rid of the variables I do not need. 
+
+The table's columns contain information about three different things: information about the facility, actual emissions data, and how gasses were emitted. How gasses were emitted is beyond the scopeof  the research question, so I will focus on only the first two categories and I will get rid of the variables I do not need. 
 
 ## data wrangling
 ```{r}
@@ -180,6 +180,32 @@ emissionsTable %>%
   group_by(State) %>%
   summarise(emissions = sum(`Total reported direct emissions`))
 ```
+
+# Emissions by state per capita
+### join on population and emissions table
+The emissions table has state abbreviations, the population table has the full name of the state. It would be tedious to write 50 if else statements and a for loop, so instead I will join the population table with a table of state abbrevations
+
+```{r}
+# download abbreviations table
+abbreviationsWebPage <- "https://en.wikipedia.org/wiki/List_of_U.S._state_abbreviations"
+abbreviationsTables <-
+  abbreviationsWebPage %>%
+  read_html() %>%
+  html_nodes(css = "table") %>%
+  html_table(fill = TRUE)
+
+abbreviationTableOriginal <- abbreviationsTables[[1]]
+
+abbreviationTable <- read.table(abbreviationTableOriginal, skip = 9)
+```
+
+```{r}
+populationByState <-
+  populationByState %>%
+  left_join(abbreviationTable, Name) %>%
+  select(Name, `2018 Population`, )
+```
+
 
 Would be better to get emissions on a per capita basis by state. Each of these states have huge differences in population size
 # get table with states and population
