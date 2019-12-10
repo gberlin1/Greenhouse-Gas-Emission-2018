@@ -8,8 +8,7 @@ output: html_notebook
 # Greenhouse gas reporting program fun by the epa requires all facilities that emit over 25,000 metric tons of CO2 to record and report their emissions. The EPA makes these data publicly available.In this project I will look at greenhouse gas emissions across industries and states. Knowing the source of emissions and the purpose of those emissions will help people better reduce those emissions. 
 
 # First I need to load packages and data
-## load libraries
-```{r}
+```{r, include=FALSE}
 # clear environment
 rm(list = ls()) 
 
@@ -25,23 +24,20 @@ library(maps)
 library(rvest)
 ```
 
-## load data
-```{r}
+
+```{r, include=FALSE}
 fullEmissionsTable <- read_csv("/home/gabriel/college/Greenhouse Gas Emissions 2018/direct_emitters.csv", skip = 3)
 populationWebPage <- "https://en.m.wikipedia.org/wiki/List_of_states_and_territories_of_the_United_States_by_population"
-populationByStateTables <-
+popByStateTables <-
   populationWebPage %>%
   read_html() %>%
   html_nodes(css = "table") %>%
   html_table(fill = TRUE)
+
+populationByState <- popByStateTables[[1]]
 ```
 
-## I need to get the first table
-```{r}
-populationByState <- populationByStateTables[[1]]
-```
-
-## view emissions table data
+# view emissions table data
 ### Names of the columns
 ```{r}
 names(fullEmissionsTable)
@@ -63,6 +59,7 @@ names(populationByState)
 head(populationByState, 10)
 ```
 
+# data wrangling
 ## I only need the name of the state and it population
 ```{r}
 populationByState <-
@@ -77,12 +74,9 @@ populationByState <-
   rename("2018 Population" = `Population estimate, July 1, 2018[5]`)
 ```
 
-
-
-
 The table's columns contain information about three different things: information about the facility, actual emissions data, and how gasses were emitted. How gasses were emitted is beyond the scopeof  the research question, so I will focus on only the first two categories and I will get rid of the variables I do not need. 
 
-## data wrangling
+# more data wrangling
 ```{r}
 emissionsTable <- 
   fullEmissionsTable %>%
@@ -156,13 +150,17 @@ for (i in 1:nrow(emissionsTable)) {
 
 # View all emissions by sector
 ```{r}
-emissionsTable %>%
+sectorEmissions <-
+  emissionsTable %>%
   group_by(sector) %>%
   summarise(emissions = sum(`Total reported direct emissions`)) %>%
   arrange(desc(emissions))
 ```
 
-### Barchart of emissions by sector
+## Barchart of emissions by sector
+```{r}
+barGraphHelper(data = sectorEmissions)
+```
 
 # View CO2 and methane emissions 
 ```{r}
@@ -170,8 +168,6 @@ emissionsTable %>%
   group_by(sector) %>%
   summarise("CO2 Emissions" = sum(`CO2 emissions (non-biogenic)`, na.rm = TRUE),
             "Methand Emissions" = sum(`Methane (CH4) emissions`, na.rm = TRUE))
-
-
 ```
 
 # Total emissions by state
@@ -184,20 +180,6 @@ emissionsTable %>%
 # Emissions by state per capita
 ### join on population and emissions table
 The emissions table has state abbreviations, the population table has the full name of the state. It would be tedious to write 50 if else statements and a for loop, so instead I will join the population table with a table of state abbrevations
-
-```{r}
-# download abbreviations table
-abbreviationsWebPage <- "https://en.wikipedia.org/wiki/List_of_U.S._state_abbreviations"
-abbreviationsTables <-
-  abbreviationsWebPage %>%
-  read_html() %>%
-  html_nodes(css = "table") %>%
-  html_table(fill = TRUE)
-
-abbreviationTableOriginal <- abbreviationsTables[[1]]
-
-abbreviationTable <- read.table(abbreviationTableOriginal, skip = 9)
-```
 
 ```{r}
 populationByState <-
