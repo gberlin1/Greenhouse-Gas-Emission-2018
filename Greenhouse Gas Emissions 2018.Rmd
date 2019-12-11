@@ -27,7 +27,7 @@ library(rvest)
 
 ## load data
 ```{r}
-fullEmissionsTable <- read_csv("/home/gabriel/college/Greenhouse Gas Emissions 2018/direct_emitters.csv", skip = 3)z
+fullEmissionsTable <- read_csv("/home/gabriel/college/Greenhouse Gas Emissions 2018/direct_emitters.csv", skip = 3)
 populationWebPage <- "https://en.m.wikipedia.org/wiki/List_of_states_and_territories_of_the_United_States_by_population"
 popByStateTables <-
   populationWebPage %>%
@@ -158,21 +158,10 @@ emissionsTable %>%
 ### join on population and emissions table
 The emissions table has state abbreviations, the population table has the full name of the state. It would be tedious to write 50 if else statements and a for loop, so instead I will join the population table with a table of state abbrevations
 
-```{r}
+
 populationByState <-
   populationByState %>%
   left_join(abbreviationTable, Name) %>%
   select(Name, `2018 Population`, )
-```
 
-
-Would be better to get emissions on a per capita basis by state. Each of these states have huge differences in population size
-# get table with states and population
-# add total emissions to that table
-# divide emissions per state by populaiton of that state
-
-Will be interesting to see a map with emissions superimposed
-```{r}
-data("usaMapEnv")
-```
 
