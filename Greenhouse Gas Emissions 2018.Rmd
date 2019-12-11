@@ -5,10 +5,11 @@ date: "11/29/2019"
 output: html_notebook
 ---
 
-# Greenhouse gas reporting program fun by the epa requires all facilities that emit over 25,000 metric tons of CO2 to record and report their emissions. The EPA makes these data publicly available.In this project I will look at greenhouse gas emissions across industries and states. Knowing the source of emissions and the purpose of those emissions will help people better reduce those emissions. 
+# The Greenhouse gas reporting program is a program run by the Environmental Protection Agency that requires all U.S. facilities emitting over 25,000 metric tons of CO2 per year to record and report their emissions. The EPA makes these data publicly available. 
+# In this project I will look at greenhouse gas emissions across industries and states. Knowing the source of emissions will help more effectively reduce those emissions. 
 
-# First I need to load packages and data
-```{r, include=FALSE}
+## load packages
+```{r}
 # clear environment
 rm(list = ls()) 
 
@@ -24,9 +25,9 @@ library(maps)
 library(rvest)
 ```
 
-
-```{r, include=FALSE}
-fullEmissionsTable <- read_csv("/home/gabriel/college/Greenhouse Gas Emissions 2018/direct_emitters.csv", skip = 3)
+## load data
+```{r}
+fullEmissionsTable <- read_csv("/home/gabriel/college/Greenhouse Gas Emissions 2018/direct_emitters.csv", skip = 3)z
 populationWebPage <- "https://en.m.wikipedia.org/wiki/List_of_states_and_territories_of_the_United_States_by_population"
 popByStateTables <-
   populationWebPage %>%
@@ -37,19 +38,9 @@ popByStateTables <-
 populationByState <- popByStateTables[[1]]
 ```
 
-# view emissions table data
-### Names of the columns
+## view emissions table data
 ```{r}
 names(fullEmissionsTable)
-```
-
-#### Information about the table
-```{r}
-str(fullEmissionsTable)
-```
-
-#### First few rows of the table
-```{r}
 head(fullEmissionsTable, 10)
 ```
 
@@ -59,24 +50,11 @@ names(populationByState)
 head(populationByState, 10)
 ```
 
-# data wrangling
-## I only need the name of the state and it population
-```{r}
-populationByState <-
-  populationByState %>%
-  select(Name, `Population estimate, July 1, 2018[5]`)
-```
 
-## The variable "Population estimate, July1, 2018[5]" is too wordy
-```{r}
-populationByState <-
-  populationByState %>%
-  rename("2018 Population" = `Population estimate, July 1, 2018[5]`)
-```
 
 The table's columns contain information about three different things: information about the facility, actual emissions data, and how gasses were emitted. How gasses were emitted is beyond the scopeof  the research question, so I will focus on only the first two categories and I will get rid of the variables I do not need. 
 
-# more data wrangling
+## data wrangling of emissions table
 ```{r}
 emissionsTable <- 
   fullEmissionsTable %>%
@@ -89,23 +67,17 @@ emissionsTable <-
          `Other GHGs (metric tons CO2e)`, `Biogenic CO2 emissions (metric tons)`)
 ```
 
-
-# View a table of all the different sectors and how many times they appear in the emissions table.
 ## View list of sectors/industries
 ```{r}
-fullEmissionsTable %>%
-  group_by(`Industry Type (sectors)`) %>%
-  summarise(total = n()) %>%
-  arrange(desc(total))
-
 emissionsTable %>%
   group_by(sector) %>%
-  summarise(total = n())
+  summarise(total = n()) %>%
+  arrange(desc(total))
 ```
 
-There are multiple sectors in some of the values. For example, "Chemicals,Coal-based Liquid Fuel Supply,Suppliers of CO2". Because there are multiple values in a single cell, this data is not in tidy form. To make it in tidy form I will make sure there is only one value in a cell. Additionally, these details are not relevant. I will need to use regular expressions and a loop to replace the values.
+### There are multiple sectors in some of the values. For example, "Chemicals,Coal-based Liquid Fuel Supply,Suppliers of CO2". Because there are multiple values in a single cell, this data is not in tidy form. To make it in tidy form I will make sure there is only one value in a cell. Additionally, these details are not relevant. I will need to use regular expressions and a loop to replace the values.
 
-## these are the new simplified sectors
+## set the sectors equal to simplified version
 ```{r}
 chem <- "Chemicals"
 metals <- "Metals"
@@ -116,11 +88,7 @@ petro <- "Petroleum"
 paper <- "Pulp"
 power <- "Power Plants"
 injection <- "Injection"
-```
 
-
-## loop through the emissions table and replace the sector values with their simplified version
-```{r}
 s <- "" # variable needed to loop through table
 i <- 0 # for loop counter variable
 
@@ -148,13 +116,22 @@ for (i in 1:nrow(emissionsTable)) {
 }
 ```
 
-# View all emissions by sector
+## data wrangling of population table
+```{r}
+populationByState <-
+  populationByState %>%
+  select(Name, `Population estimate, July 1, 2018[5]`) %>%
+  rename("2018 Population" = `Population estimate, July 1, 2018[5]`)
+```
+
+## View all emissions by sector
 ```{r}
 sectorEmissions <-
   emissionsTable %>%
   group_by(sector) %>%
   summarise(emissions = sum(`Total reported direct emissions`)) %>%
   arrange(desc(emissions))
+sectorEmissions
 ```
 
 ## Barchart of emissions by sector
@@ -162,7 +139,7 @@ sectorEmissions <-
 barGraphHelper(data = sectorEmissions)
 ```
 
-# View CO2 and methane emissions 
+## View CO2 and methane emissions 
 ```{r}
 emissionsTable %>%
   group_by(sector) %>%
@@ -177,7 +154,7 @@ emissionsTable %>%
   summarise(emissions = sum(`Total reported direct emissions`))
 ```
 
-# Emissions by state per capita
+## Emissions by state per capita
 ### join on population and emissions table
 The emissions table has state abbreviations, the population table has the full name of the state. It would be tedious to write 50 if else statements and a for loop, so instead I will join the population table with a table of state abbrevations
 
@@ -198,16 +175,4 @@ Will be interesting to see a map with emissions superimposed
 ```{r}
 data("usaMapEnv")
 ```
-
-
-
-
-
-
-How in depth?
-as much level as the weekly projects
-look at check sheet
-I'm directing the analysis
-
-
 
