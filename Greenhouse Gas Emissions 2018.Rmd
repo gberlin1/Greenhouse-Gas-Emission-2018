@@ -8,7 +8,8 @@ output: html_notebook
 # The Greenhouse gas reporting program is a program run by the Environmental Protection Agency that requires all U.S. facilities emitting over 25,000 metric tons of CO2 per year to record and report their emissions. The EPA makes these data publicly available. 
 # In this project I will look at greenhouse gas emissions across industries and states. Knowing the source of emissions will help more effectively reduce those emissions. 
 
-## load packages
+## load packages and data
+### packages
 ```{r}
 # clear environment
 rm(list = ls()) 
@@ -25,36 +26,28 @@ library(maps)
 library(rvest)
 ```
 
-## load data
+### data
 ```{r}
-fullEmissionsTable <- read_csv("/home/gabriel/college/Greenhouse Gas Emissions 2018/direct_emitters.csv", skip = 3)
-populationWebPage <- "https://en.m.wikipedia.org/wiki/List_of_states_and_territories_of_the_United_States_by_population"
-popByStateTables <-
-  populationWebPage %>%
-  read_html() %>%
-  html_nodes(css = "table") %>%
-  html_table(fill = TRUE)
-
-populationByState <- popByStateTables[[1]]
+fullEmissionsTable <- read_csv("direct_emitters.csv", skip = 3)
+data("ZipGeography")
 ```
 
-## view emissions table data
+## view data
+### view emissions table data
 ```{r}
 names(fullEmissionsTable)
 head(fullEmissionsTable, 10)
 ```
-
-## view population data
+### view population data
 ```{r}
-names(populationByState)
-head(populationByState, 10)
+names(ZipGeography)
+head(ZipGeography, 10)
 ```
-
-
 
 The table's columns contain information about three different things: information about the facility, actual emissions data, and how gasses were emitted. How gasses were emitted is beyond the scopeof  the research question, so I will focus on only the first two categories and I will get rid of the variables I do not need. 
 
-## data wrangling of emissions table
+## data wrangling
+### data wrangling of emissions table
 ```{r}
 emissionsTable <- 
   fullEmissionsTable %>%
@@ -67,7 +60,7 @@ emissionsTable <-
          `Other GHGs (metric tons CO2e)`, `Biogenic CO2 emissions (metric tons)`)
 ```
 
-## View list of sectors/industries
+#### list of sectors/industries
 ```{r}
 emissionsTable %>%
   group_by(sector) %>%
@@ -75,9 +68,9 @@ emissionsTable %>%
   arrange(desc(total))
 ```
 
-### There are multiple sectors in some of the values. For example, "Chemicals,Coal-based Liquid Fuel Supply,Suppliers of CO2". Because there are multiple values in a single cell, this data is not in tidy form. To make it in tidy form I will make sure there is only one value in a cell. Additionally, these details are not relevant. I will need to use regular expressions and a loop to replace the values.
+There are multiple sectors in some of the values. For example, "Chemicals,Coal-based Liquid Fuel Supply,Suppliers of CO2". Because there are multiple values in a single cell, this data is not in tidy form. To make it in tidy form I will make sure there is only one value in a cell. Additionally, these details are not relevant. I will need to use regular expressions and a loop to replace the values.
 
-## set the sectors equal to simplified version
+#### set the sectors equal to simplified version
 ```{r}
 chem <- "Chemicals"
 metals <- "Metals"
@@ -116,35 +109,51 @@ for (i in 1:nrow(emissionsTable)) {
 }
 ```
 
-## data wrangling of population table
+### data wrangling of zip geography table: need population and state
+#### population by state
 ```{r}
-populationByState <-
-  populationByState %>%
-  select(Name, `Population estimate, July 1, 2018[5]`) %>%
-  rename("2018 Population" = `Population estimate, July 1, 2018[5]`)
+PopulationByState <- ZipGeography %>%
+  select(State, Population) %>%
+  group_by(State) %>% 
+  summarise(POPSUM = sum(Population, na.rm=TRUE))
+PopulationByState
 ```
 
+
+# now that the data is in glyph ready form, I will display tables and graphs of the data
 ## View all emissions by sector
 ```{r}
 sectorEmissions <-
   emissionsTable %>%
   group_by(sector) %>%
-  summarise(emissions = sum(`Total reported direct emissions`)) %>%
+  summarise(emissions = sum(`Total reported direct emissions`), carbon = sum(`CO2 emissions (non-biogenic)`, na.rm = TRUE), methane = sum(`Methane (CH4) emissions`, na.rm = TRUE)) %>% 
   arrange(desc(emissions))
 sectorEmissions
 ```
 
+This table shows that power plants are, by far, the biggest polluter out of all industries in the economy.
+
+# Data Visualizaitons
+## emissions for all facilities
+```{r}
+emissionsTable %>%
+  ggplot(aes(x = `Total reported direct emissions`)) + geom_density() + xlim(0, 500000)
+emissionsTable %>%
+  ggplot(aes(x = `Total reported direct emissions`, y = 1)) + geom_point(alpha = .2, position = "jitter") + xlab("emissions") + xlim(0, 500000)
+```
+
+This shows that the vast majority of facilities emit between 0 and 100,000 metric tons of greenhouse gasses.
+
 ## Barchart of emissions by sector
 ```{r}
-barGraphHelper(data = sectorEmissions)
+sectorEmissions %>%
+  ggplot(aes(x = sector, y = emissions, reorder(emissions))) + geom_bar(stat = "identity")
 ```
 
 ## View CO2 and methane emissions 
 ```{r}
-emissionsTable %>%
-  group_by(sector) %>%
-  summarise("CO2 Emissions" = sum(`CO2 emissions (non-biogenic)`, na.rm = TRUE),
-            "Methand Emissions" = sum(`Methane (CH4) emissions`, na.rm = TRUE))
+sectorEmissions %>% 
+  ggplot() + xlab() + geom_bar(stat = "identity") + facet_wrap(sector)
 ```
 
 # Total emissions by state
