@@ -123,12 +123,17 @@ PopulationByState
 # now that the data is in glyph ready form, I will display tables and graphs of the data
 ## View all emissions by sector
 ```{r}
-sectorEmissions <-
+StateSectorEmissions <-
   emissionsTable %>%
-  group_by(sector) %>%
+  group_by(sector, State) %>%
   summarise(emissions = sum(`Total reported direct emissions`), carbon = sum(`CO2 emissions (non-biogenic)`, na.rm = TRUE), methane = sum(`Methane (CH4) emissions`, na.rm = TRUE)) %>% 
   arrange(desc(emissions))
-sectorEmissions
+SectorEmissions <-
+  StateSectorEmissions %>%
+  group_by(sector) %>%
+  summarise(emissions = sum(emissions), carbon = sum((carbon), na.rm = TRUE), methane = sum(methane, na.rm = TRUE))
+StateSectorEmissions
+SectorEmissions
 ```
 
 This table shows that power plants are, by far, the biggest polluter out of all industries in the economy.
@@ -146,31 +151,25 @@ This shows that the vast majority of facilities emit between 0 and 100,000 metri
 
 ## Barchart of emissions by sector
 ```{r}
-sectorEmissions %>%
-  ggplot(aes(x = sector, y = emissions, reorder(emissions))) + geom_bar(stat = "identity")
+StateSectorEmissions %>%
+  ggplot(aes(x = sector, y = emissions)) + geom_bar(stat = "identity")
 ```
 
-## View CO2 and methane emissions 
+## Total emissions by state
 ```{r}
-sectorEmissions %>% 
-  ggplot() + xlab() + geom_bar(stat = "identity") + facet_wrap(sector)
+StateSectorEmissions %>%
+  ggplot(aes(x = sector, y = emissions)) + geom_bar(stat = "identity")
 ```
 
-# Total emissions by state
+## View CO2 and methane emissions by sector
 ```{r}
-emissionsTable %>%
-  group_by(State) %>%
-  summarise(emissions = sum(`Total reported direct emissions`))
+ggplot(data = SectorEmissions, aes(x = methane, y = carbon)) + geom_point(aes(color = sector))
 ```
 
-## Emissions by state per capita
-### join on population and emissions table
-The emissions table has state abbreviations, the population table has the full name of the state. It would be tedious to write 50 if else statements and a for loop, so instead I will join the population table with a table of state abbrevations
+## View CO2 and methane emissions by state and sector
+```{r}
+ggplot(data = StateSectorEmissions, aes(x = methane, y = carbon)) + geom_point(aes(color = sector))+ facet_wrap(. ~ State)
+```
 
 
-populationByState <-
-  populationByState %>%
-  left_join(abbreviationTable, Name) %>%
-  select(Name, `2018 Population`, )
-
-
+This shows that the amount and type of emissions is the roughly the same in all 50 states. Power plants are, by far, the largest net emitter of greenhouse gas emissions. Although they emit relatively low amounts of methane. "Other" sectors emit the most methane.
