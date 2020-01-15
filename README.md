@@ -1,4 +1,3 @@
 # Greenhouse-Gas-Emission-2018
 
-## I will look at greenhouse gas emissions form 2018 here.
-## This is my final project in stat184.
+This is the final project for Stat 184. In this project, I took data from the EPA's greenhouse gas reporting program to learn about the sources of greenhouse gas emissions in the United States. 
